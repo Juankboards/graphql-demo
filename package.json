@@ -1,0 +1,14 @@
+{
+  "name": "grapghql-demo",
+  "version": "1.0.0",
+  "description": "GraphQL Demo",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Juankboards",
+  "license": "ISC",
+  "dependencies": {
+    "graphql": "^0.13.2"
+  }
+}
