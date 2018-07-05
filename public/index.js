@@ -2,8 +2,8 @@ function query() {
   const body = {
     query: `{
         quoteOfTheDay
-        random
-        rollThreeDice
+        random(max: 12)
+        rollDice(numDice: 6, numSides: 12)
       }`
     };
   const httpRequest = new XMLHttpRequest();
