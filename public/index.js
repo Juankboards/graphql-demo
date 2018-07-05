@@ -1,9 +1,15 @@
 function query() {
-  const body = { query: "{ hello }" };
+  const body = {
+    query: `{
+        quoteOfTheDay
+        random
+        rollThreeDice
+      }`
+    };
   const httpRequest = new XMLHttpRequest();
   httpRequest.onreadystatechange = function() {
     if (httpRequest.readyState == 4 && httpRequest.status < 400) {
-      const result = httpRequest.responseText.replace(/([{}:])/gi, "&nbsp$&&nbsp&nbsp");
+      const result = httpRequest.responseText.replace(/([{}:,])/gi, "$&&nbsp&nbsp");
       document.getElementById("root").innerHTML = "<p>" + result + "</p>";
     }
   }
