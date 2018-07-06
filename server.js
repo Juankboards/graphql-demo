@@ -4,8 +4,8 @@ const graphqlHTTP = require("express-graphql");
 const { MongoClient, ObjectID } = require("mongodb");
 let db;
 
-MongoClient.connect("mongodb://localhost:27017/graphql-demo", (errDb, client) => {
-  if(errDb) throw err;
+MongoClient.connect("mongodb://localhost:27017/graphql-demo", (err, client) => {
+  if(err) throw err;
   db = client.db("graphql-demo");
 });
 
