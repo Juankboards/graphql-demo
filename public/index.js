@@ -1,9 +1,11 @@
 function query() {
   const body = {
     query: `{
-        quoteOfTheDay
-        random(max: 12)
-        rollDice(numDice: 6, numSides: 12)
+        getAlbum(numSongs: 12) {
+          randomSong
+          randomPlaylist(numSongs: 4)
+          songs
+        }
       }`
     };
   const httpRequest = new XMLHttpRequest();
