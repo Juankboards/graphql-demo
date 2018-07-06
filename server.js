@@ -34,6 +34,7 @@ const schema = buildSchema(`
 
   type Query {
     getUser(id: ID!): User
+    logged: User
   }
 `);
 
@@ -52,6 +53,11 @@ class User {
 }
 
 const root = {
+  logged: (_, request) => {
+    if(request.userLogged)
+      return request.userLogged
+    return new User();
+  },
   getUser: ({ id }) => {
     return new Promise((resolve, reject) => {
       db.collection("users").find(ObjectID(id)).toArray()
@@ -94,8 +100,28 @@ const root = {
     });
   }
 };
+
+const loggingMiddleware = (req, res, next) => {
+  // Mocking Authentication
+  req.userLogged = new Promise((resolve, reject) => {
+    db.collection("users").find(ObjectID("5b3eea48c3948111f29a68e3")).toArray()
+      .then(user => {
+        if(user.length > 0){
+          resolve(new User("5b3eea48c3948111f29a68e3", user[0]));
+        } else {
+          resolve(`No User with ID 5b3eea48c3948111f29a68e3`);
+        }
+      })
+      .catch(err => {
+        reject(JSON.stringify(err));
+      });
+  });
+  next();
+}
+
 const app = express();
 const port = process.env.PORT || 4000;
+app.use(loggingMiddleware);
 app.use("/graphql", graphqlHTTP({
   schema: schema,
   rootValue: root,
