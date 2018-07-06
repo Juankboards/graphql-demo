@@ -7,12 +7,17 @@
       h1 {
         text-align: center;
       }
+      .buttons {
+        display: flex;
+        justify-content: center;
+        flex-direction: row;
+      }
       button {
         width: 150px;
         height: 50px;
         border-radius: 10px;
         border: none;
-        margin: 20px auto;
+        margin: 20px 2px;
         display: block;
         color: #f1f1f1;
         background-color: #505d55;
@@ -30,7 +35,11 @@
   </head>
   <body>
     <h1>GraphQL Demo</h1>
-    <button onClick="query()">Get Info</button>
+    <div class="buttons">
+      <button onClick="query()">Get User</button>
+      <button onClick="save()">Save User</button>
+      <button onClick="update()">Update User</button>
+    </div>
     <div id="root"></div>
   </body>
   <script src="index.js"></script>

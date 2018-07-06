@@ -1,54 +1,97 @@
 const express = require("express");
 const { buildSchema } = require("graphql");
 const graphqlHTTP = require("express-graphql");
+const { MongoClient, ObjectID } = require("mongodb");
+let db;
+
+MongoClient.connect("mongodb://localhost:27017/graphql-demo", (errDb, client) => {
+  if(errDb) throw err;
+  db = client.db("graphql-demo");
+});
+
 
 const schema = buildSchema(`
-  type RandomAlbum {
-    songs: [Int]
-    numSongs: Int!
-    randomSong: Int!
-    randomPlaylist(numSongs: Int!): [Int]
+  type User {
+    id: ID!
+    name: String!
+    age: Int!
+    nationality: String
+    hobbies: [String]
+    greeting(name: String): String!
+  }
+
+  input UserInput {
+    name: String!
+    age: Int!
+    nationality: String
+    hobbies: [String]
+  }
+
+  type Mutation {
+    createUser(input: UserInput): User
+    updateUser(id: ID!, input: UserInput): User
   }
 
   type Query {
-    getAlbum(numSongs: Int): RandomAlbum
+    getUser(id: ID!): User
   }
 `);
 
-class RandomAlbum {
-  constructor(numSongs) {
-    this.songs = this._generateSongs(numSongs);
-    this.numSongs = numSongs;
+class User {
+  constructor(id, { name, age, nationality, hobbies }) {
+    this.id = id;
+    this.name = name;
+    this.age = age;
+    this.nationality = nationality;
+    this.hobbies = hobbies;
   }
 
-  _randomNumber(max) {
-    return (1 + Math.floor(Math.random() * max));
-  }
-
-  _generateSongs(numSongs) {
-    var songs = [];
-    for(let i=0; i < numSongs; i++) {
-      songs.push(this._randomNumber(numSongs));
-    }
-    return songs;
-  }
-
-  randomSong() {
-    return this.songs[this._randomNumber(this.numSongs) - 1];
-  }
-
-  randomPlaylist({ numSongs }) {
-    var songs = [];
-    for(let i=0; i < numSongs; i++) {
-      songs.push(this.randomSong());
-    }
-    return songs;
+  greeting({ name }) {
+    return `Hi ${ name }, I'm ${ this.name }. Nice to meet you!`
   }
 }
 
 const root = {
-  getAlbum: ({ numSongs }) => {
-    return new RandomAlbum(numSongs || 1);
+  getUser: ({ id }) => {
+    return new Promise((resolve, reject) => {
+      db.collection("users").find(ObjectID(id)).toArray()
+        .then(user => {
+          if(user.length > 0){
+            resolve(new User(id, user[0]));
+          } else {
+            resolve(`No User with ID ${ id }`);
+          }
+        })
+        .catch(err => {
+          reject(JSON.stringify(err));
+        });
+    });
+  },
+  createUser: ({ input }) => {
+    return new Promise((resolve, reject) => {
+      db.collection("users").save(input)
+        .then(user => {
+          resolve(new User(user.ops[0]._id, user.ops[0]));
+        })
+        .catch(err => {
+          reject(JSON.stringify(err));
+        });
+    });
+  },
+  updateUser: ({ id, input }) => {
+    return new Promise((resolve, reject) => {
+      db.collection("users").findOneAndUpdate(ObjectID(id), { $set: input }, { returnNewDocument : true })
+        .then(user => {
+          if(user.value){
+            resolve(new User(id, user.value));
+          } else {
+            resolve(`No User with ID ${ id }`);
+          }
+        })
+        .catch(err => {
+          reject(JSON.stringify(err));
+        });
+    });
   }
 };
 const app = express();
